@@ -13,8 +13,8 @@
                              BrowserType$LaunchPersistentContextOptions
                              Download Locator$ClickOptions Locator$DblclickOptions
                              Locator$WaitForOptions Page Page$RouteOptions
-                             Page$WaitForSelectorOptions Playwright Response Route
-                             TimeoutError)
+                             Page$LocatorOptions Page$WaitForSelectorOptions
+                             Playwright Response Route TimeoutError)
    (com.microsoft.playwright.options WaitForSelectorState SelectOption)
    (garden.selectors CSSSelector)
    (java.io File)
@@ -209,24 +209,35 @@
 
 (declare -query)
 
+(defn ->locator-options
+  [{:keys [has has-not has-text has-not-text]}]
+  (cond-> (Page$LocatorOptions.)
+    has (.setHas has)
+    has-not (.setHasNot has-not)
+    has-text (.setHasText has-text)
+    has-not-text (.setHasNotText has-not-text)))
+
 (defn query
   ^SeqableLocator
-  [q]
-  (if (instance? SeqableLocator q)
-    q
-    (let [locator (cond
-                    (instance? com.microsoft.playwright.Locator q)
-                    q
+  ([q]
+   (query q nil))
+  ([q option]
+   (if (instance? SeqableLocator q)
+     q
+     (let [option (->locator-options option)
+           locator (cond
+                     (instance? com.microsoft.playwright.Locator q)
+                     q
 
                     ;; Subquery - a vector/list starting with a (sequable)locator searches in its subtree(s).
-                    (and (sequential? q)
-                         (or (instance? SeqableLocator (first q))
-                             (instance? com.microsoft.playwright.Locator (first q))))
-                    (.. (-query (first q)) (locator (query->selector (rest q))))
+                     (and (sequential? q)
+                          (or (instance? SeqableLocator (first q))
+                              (instance? com.microsoft.playwright.Locator (first q))))
+                     (.. (-query (first q)) (locator (query->selector (rest q)) option))
 
-                    :else
-                    (.. (get-page) (locator (query->selector q))))]
-      (SeqableLocator. locator))))
+                     :else
+                     (.. (get-page) (locator (query->selector q) option)))]
+       (SeqableLocator. locator)))))
 
 (defn -query
   "Like `query`, but returns a locator instead of a `SeqableLocator`.
