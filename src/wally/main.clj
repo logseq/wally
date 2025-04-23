@@ -336,6 +336,14 @@
   [q]
   (.inputValue (-query q)))
 
+(defn ->wait-option
+  [state timeout]
+  (cond-> (Page$WaitForSelectorOptions.)
+      state (.setState
+             (WaitForSelectorState/valueOf
+              (csk/->SCREAMING_SNAKE_CASE_STRING state)))
+      timeout (.setTimeout timeout)))
+
 (defn wait-for
   "`state` may be :hidden, :visible, :attached or :detached, defaults to `:visible`.
   `timeout` is in milliseconds, defaults to the page timeout.
@@ -345,14 +353,13 @@
   ([q]
    (wait-for q {}))
   ([q {:keys [state timeout]}]
-   (.waitForSelector
-    (get-page)
-    (query->selector q)
-    (cond-> (Page$WaitForSelectorOptions.)
-      state (.setState
-             (WaitForSelectorState/valueOf
-              (csk/->SCREAMING_SNAKE_CASE_STRING state)))
-      timeout (.setTimeout timeout)))))
+   (let [option (->wait-option state timeout)]
+     (if (instance? com.microsoft.playwright.Locator q)
+       (.waitFor q option)
+       (.waitForSelector
+        (get-page)
+        (query->selector q)
+        option)))))
 
 (defn wait-for-not-visible
   "Waits for element to be either not present in DOM or hidden.
