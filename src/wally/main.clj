@@ -36,7 +36,7 @@
   (io/file ".wally/webdriver/data"))
 
 (defn- launch-persistent
-  ^Page [^BrowserType browser-type headless]
+  ^Page [^BrowserType browser-type headless slow-mo]
   (io/make-parents user-data-dir)
   (-> browser-type
       (.launchPersistentContext
@@ -48,17 +48,17 @@
                         (.getAbsolutePath user-data-dir))))
        (-> (BrowserType$LaunchPersistentContextOptions.)
            (.setHeadless headless)
-           (.setSlowMo 50)))
+           (.setSlowMo slow-mo)))
       .pages
       (first)))
 
 (defn- launch-non-persistent
-  ^Page [^BrowserType browser-type headless]
+  ^Page [^BrowserType browser-type headless slow-mo]
   (-> browser-type
       (.launch
        (-> (BrowserType$LaunchOptions.)
            (.setHeadless headless)
-           (.setSlowMo 50)))
+           (.setSlowMo slow-mo)))
       .newPage))
 
 (defonce ^:private page->playwright (atom {}))
@@ -68,16 +68,19 @@
    []
    (make-page {}))
   (^Page
-   [{:keys [headless persistent]
+   [{:keys [headless persistent slow-mo default-timeout]
      :or {headless false
-          persistent true}}]
+          persistent true
+          slow-mo 50
+          default-timeout 10000}}]
    (delay
      (let [pw (Playwright/create)
            page ((if persistent launch-persistent launch-non-persistent)
                  (.chromium pw)
-                 headless)]
+                 headless
+                 slow-mo)]
        (doto page
-         (.setDefaultTimeout 10000)
+         (.setDefaultTimeout default-timeout)
          (#(swap! page->playwright assoc % pw))
          (.onClose #(swap! page->playwright dissoc %)))))))
 
