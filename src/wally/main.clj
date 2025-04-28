@@ -496,6 +496,11 @@
   [label]
   (.getByLabel (get-page) label))
 
+(defn get-by-test-id
+  "Locate by testid"
+  [test-id]
+  (.getByTestId (get-page) test-id))
+
 (defmacro maybe
   "Returns `nil` in case that Playwright times out when waiting."
   [& body]
