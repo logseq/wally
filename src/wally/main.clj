@@ -90,16 +90,18 @@
     (doto (ThreadLocal.)
      (.set (make-page)))))
 
-
 (def ^:dynamic *opts*
   {::opt.command-delay 0})
 
 (defn get-page
   []
   (let [^ThreadLocal page (if (delay? *page*)
-                           @*page*
-                           *page*)]
-    (.get page)))
+                            @*page*
+                            *page*)
+        result (.get page)]
+    (if (delay? result)
+      @result
+      result)))
 
 (defn maybe-wrap-page [page]
   (if (instance? ThreadLocal page)
