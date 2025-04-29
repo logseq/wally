@@ -491,6 +491,11 @@
   [& keys]
   (run! (fn [key] (.. (get-page) keyboard (press key))) keys))
 
+(defn get-by-role
+  "Locate by role"
+  [role]
+  (.getByRole (get-page) role))
+
 (defn get-by-label
   "Locate a form control by associated label's text."
   [label]
@@ -500,6 +505,16 @@
   "Locate by testid"
   [test-id]
   (.getByTestId (get-page) test-id))
+
+(defn get-by-text
+  "Locate by text"
+  [text]
+  (.getByText (get-page) text))
+
+(defn get-by-placeholder
+  "Locate by placeholder"
+  [placeholder]
+  (.getByPlaceholder (get-page) placeholder))
 
 (defmacro maybe
   "Returns `nil` in case that Playwright times out when waiting."
