@@ -84,22 +84,32 @@
          (#(swap! page->playwright assoc % pw))
          (.onClose #(swap! page->playwright dissoc %)))))))
 
-(defonce ^:dynamic ^Page *page*
-  (make-page))
+(defonce ^:dynamic *page*
+  (delay ;; add a delay, so that the thread that sets this value is the most recent one.
+         ;; (note that that would require `make-page` to remove its `delay`, to avoid a double `delay` wrapping)
+    (doto (ThreadLocal.)
+     (.set (make-page)))))
+
 
 (def ^:dynamic *opts*
   {::opt.command-delay 0})
 
 (defn get-page
-  ^Page
   []
-  (if (delay? *page*)
-    @*page*
-    *page*))
+  (let [^ThreadLocal page (if (delay? *page*)
+                           @*page*
+                           *page*)]
+    (.get page)))
+
+(defn maybe-wrap-page [page]
+  (if (instance? ThreadLocal page)
+    page
+    (doto (ThreadLocal.)
+      (.set page))))
 
 (defmacro with-page
   [page & body]
-  `(binding [*page* ~page]
+  `(binding [*page* (maybe-wrap-page ~page)]
      ~@body))
 
 (defmacro with-page-open
