@@ -14,6 +14,7 @@
                              Download Locator$ClickOptions Locator$DblclickOptions
                              Locator$WaitForOptions Page Page$RouteOptions
                              Page$LocatorOptions Page$WaitForSelectorOptions
+                             Keyboard$TypeOptions
                              Playwright Response Route TimeoutError)
    (com.microsoft.playwright.options WaitForSelectorState SelectOption)
    (garden.selectors CSSSelector)
@@ -500,8 +501,13 @@
   See https://playwright.dev/docs/api/class-keyboard.
 
   E.g. `(keyboard-press \"Enter\")`"
-  [& keys]
-  (run! (fn [key] (.. (get-page) keyboard (press key))) keys))
+  [key-or-keys & {:keys [delay] :or {delay 0}}]
+  (let [keys (if (coll? key-or-keys)
+               key-or-keys
+               [key-or-keys])]
+    (run! (fn [key] (.. (w/get-page) keyboard
+                        (press key
+                               (.setDelay (Keyboard$TypeOptions.) delay)))) keys)))
 
 (defn get-by-role
   "Locate by role"
