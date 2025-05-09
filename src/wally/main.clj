@@ -505,7 +505,7 @@
   (let [keys (if (coll? key-or-keys)
                key-or-keys
                [key-or-keys])]
-    (run! (fn [key] (.. (w/get-page) keyboard
+    (run! (fn [key] (.. (get-page) keyboard
                         (press key
                                (.setDelay (Keyboard$TypeOptions.) delay)))) keys)))
 
