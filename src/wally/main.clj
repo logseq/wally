@@ -14,7 +14,7 @@
                              Download Locator$ClickOptions Locator$DblclickOptions
                              Locator$WaitForOptions Page Page$RouteOptions
                              Page$LocatorOptions Page$WaitForSelectorOptions
-                             Keyboard$TypeOptions
+                             Keyboard$TypeOptions Keyboard$PressOptions
                              Playwright Response Route TimeoutError)
    (com.microsoft.playwright.options WaitForSelectorState SelectOption)
    (garden.selectors CSSSelector)
@@ -507,7 +507,7 @@
                [key-or-keys])]
     (run! (fn [key] (.. (get-page) keyboard
                         (press key
-                               (.setDelay (Keyboard$TypeOptions.) delay)))) keys)))
+                               (.setDelay (Keyboard$PressOptions.) delay)))) keys)))
 
 (defn get-by-role
   "Locate by role"
